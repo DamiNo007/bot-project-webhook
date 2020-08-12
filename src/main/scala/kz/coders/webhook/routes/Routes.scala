@@ -47,17 +47,31 @@ class Routes(logger: LoggingAdapter,
   implicit val serialization: Serialization = Serialization
   implicit val timeout: Timeout = 20.seconds
 
-  def extractResponse(response: Future[Any]): Future[String] = {
-    response.mapTo[Response].map {
-      case res: ReceivedResponse =>
-        res.response
-      case res: ReceivedFailureResponse =>
-        res.error
-    }
-  }
-
-  def generateResponse(text: String): WebhookResponse = {
-    WebhookResponse(Array(WebhookResponseText(WebhookInnerText(Array(text)))))
+  def extractResponse(response: Future[Any]): Future[WebhookResponse] = {
+    response
+      .mapTo[Response]
+      .map {
+        case res: ReceivedResponse =>
+          WebhookResponse(
+            Array(
+              WebhookResponseText(
+                WebhookInnerText(
+                  Array(res.response)
+                )
+              )
+            )
+          )
+        case res: ReceivedFailureResponse =>
+          WebhookResponse(
+            Array(
+              WebhookResponseText(
+                WebhookInnerText(
+                  Array(res.error)
+                )
+              )
+            )
+          )
+      }
   }
 
   val handlers: Route = pathPrefix("api") {
@@ -70,38 +84,65 @@ class Routes(logger: LoggingAdapter,
               body.queryResult.intent.displayName match {
                 case "get-github-account" =>
                   val login = body.queryResult.parameters("github-account")
-                  val response =
-                    extractResponse(githubWorkerActor ? GetUser(login))
-                  ctx.complete(response)
+                  extractResponse(
+                    githubWorkerActor ? GetUser(login)
+                  )
+                    .flatMap(
+                      res => ctx.complete(res)
+                    )
                 case "get-github-repos" =>
                   val login = body.queryResult.parameters("github-repos")
-                  val response =
-                    extractResponse(githubWorkerActor ? GetRepositories(login))
-                  ctx.complete(response)
+                  extractResponse(
+                    githubWorkerActor ? GetRepositories(login)
+                  )
+                    .flatMap(
+                      res => ctx.complete(res)
+                    )
                 case "get-currencies" =>
                   val params = body.queryResult.parameters("currencies")
-                  val response = extractResponse(exchangeWorkerActor ? GetCurrencies(params))
-                  ctx.complete(response)
+                  extractResponse(exchangeWorkerActor ? GetCurrencies(params)).flatMap(res => ctx.complete(res))
                 case "get-convert" =>
                   val amount = body.queryResult.parameters("amount")
                   val from = body.queryResult.parameters("from")
                   val to = body.queryResult.parameters("to")
-                  val response = extractResponse(exchangeWorkerActor ? Convert(from, to, amount))
-                  ctx.complete(response)
+                  extractResponse(
+                    exchangeWorkerActor ? Convert(from, to, amount)
+                  )
+                    .flatMap(
+                      res => ctx.complete(res)
+                    )
                 case "get-rates" =>
                   val currency = body.queryResult.parameters("rates")
-                  val response = extractResponse(exchangeWorkerActor ? GetRates(currency))
-                  ctx.complete(response)
+                  extractResponse(
+                    exchangeWorkerActor ? GetRates(currency)
+                  ).flatMap(
+                    res => ctx.complete(res)
+                  )
                 case "get-news" =>
                   val params = body.queryResult.parameters("news")
-                  val response = extractResponse(newsWorkerActor ? GetNews(params))
-                  ctx.complete(response)
+                  extractResponse(
+                    newsWorkerActor ? GetNews(params)
+                  ).flatMap(
+                    res => ctx.complete(res)
+                  )
                 case "get-articles" =>
                   val params = body.queryResult.parameters("articles")
-                  val response = extractResponse(articlesWorkerActor ? GetArticles(params))
-                  ctx.complete(response)
+                  extractResponse(
+                    articlesWorkerActor ? GetArticles(params)
+                  ).flatMap(
+                    res => ctx.complete(res)
+                  )
                 case _ =>
-                  ctx.complete(generateResponse("Извините! Не понял. Не могли бы вы повторить."))
+                  val response = WebhookResponse(
+                    Array(
+                      WebhookResponseText(
+                        WebhookInnerText(
+                          Array("Извините! Не понял. Не могли бы вы повторить.")
+                        )
+                      )
+                    )
+                  )
+                  ctx.complete(response)
               }
           }
         }

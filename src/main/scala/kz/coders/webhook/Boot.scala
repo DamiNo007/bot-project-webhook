@@ -26,7 +26,8 @@ object Boot extends App {
     githubWorkerActor,
     exchangeWorkerActor,
     newsWorkerActor,
-    articlesWorkerActor)
+    articlesWorkerActor
+  )
 
   val host = config.getString("application.host")
   val port = config.getInt("application.port")
