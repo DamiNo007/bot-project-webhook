@@ -33,10 +33,6 @@ object ExchangeRequesterActor {
 
   case class GetConvertResult(from: String, to: String, amount: String)
 
-  case class GetAllCurrenciesHttp(msg: String)
-
-  case class GetRatesAllHttp(currency: String)
-
 }
 
 class ExchangeRequesterActor(config: Config)(implicit val system: ActorSystem,

@@ -57,5 +57,4 @@ object RestClientImpl {
     )
     Http().singleRequest(request).flatMap(parseResponse)
   }
-
 }

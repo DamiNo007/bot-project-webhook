@@ -40,8 +40,6 @@ object NewsRequesterActor {
 
   case class GetNewsAll(msg: String)
 
-  case class GetNewsAllHttp(msg: String)
-
 }
 
 class NewsRequesterActor(config: Config)(implicit val system: ActorSystem,

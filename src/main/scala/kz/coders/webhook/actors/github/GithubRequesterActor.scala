@@ -17,10 +17,6 @@ object GithubRequesterActor {
 
   case class GetUserRepositories(login: String)
 
-  case class GetUserAccountHttp(login: String)
-
-  case class GetUserRepositoriesHttp(login: String)
-
   case class GithubUser(login: String,
                         name: String,
                         avatarUrl: Option[String],

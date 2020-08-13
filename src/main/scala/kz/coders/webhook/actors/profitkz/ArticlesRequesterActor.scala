@@ -10,7 +10,6 @@ import kz.coders.webhook.actors.ReceivedResponse
 import kz.coders.webhook.actors.profitkz.ArticlesRequesterActor._
 import org.json4s.{DefaultFormats, Formats}
 import kz.coders.webhook.utils.RestClientImpl._
-
 import scala.concurrent.ExecutionContext
 
 object ArticlesRequesterActor {
@@ -40,8 +39,6 @@ object ArticlesRequesterActor {
   }
 
   case class GetArticlesAll(msg: String)
-
-  case class GetArticlesAllHttp(msg: String)
 
 }
 
